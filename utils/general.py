@@ -40,6 +40,7 @@ from ultralytics.yolo.utils.checks import check_requirements
 from utils import TryExcept, emojis
 from utils.downloads import curl_download, gsutil_getsize
 from utils.metrics import box_iou, fitness
+#from utils.torch_utils import select_device
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[1]  # YOLOv5 root directory
@@ -1024,6 +1025,8 @@ def print_mutation(keys, results, hyp, save_dir, bucket, prefix=colorstr('evolve
 def apply_classifier(x, model, img, im0):
     # Apply a second stage classifier to YOLO outputs
     # Example model = torchvision.models.__dict__['efficientnet_b0'](pretrained=True).to(device).eval()
+    # device = select_device('0')
+    # model = torchvision.models.__dict__['efficientnet_b0'](pretrained=True).to(device).eval()
     im0 = [im0] if isinstance(im0, np.ndarray) else im0
     for i, d in enumerate(x):  # per image
         if d is not None and len(d):
@@ -1050,11 +1053,71 @@ def apply_classifier(x, model, img, im0):
                 im /= 255  # 0 - 255 to 0.0 - 1.0
                 ims.append(im)
 
+            #img = cv2.imread(ims, cv2.IMREAD_ANYCOLOR)
+            # cv2.imshow('objek',img)
+            # cv2.waitKey(0)
+    
+            # # # closing all open windows
+            # cv2.destroyAllWindows()
+
+            # sys.exit()
+
             pred_cls2 = model(torch.Tensor(ims).to(d.device)).argmax(1)  # classifier prediction
+
             x[i] = x[i][pred_cls1 == pred_cls2]  # retain matching class detections
 
     return x
 
+# 2nd classifier
+def apply_custom_classifier(x, model, img, im0, second_size, classes = None,
+                            check_prediction=False):
+    im0 = [im0] if isinstance(im0, np.ndarray) else im0
+    device_ = x[0].device
+    for i, d in enumerate(x):  # per image
+        if d is not None and len(d):
+            d = d.clone()
+            # Reshape and pad cutouts
+            b = xyxy2xywh(d[:, :4])  # boxes
+            b[:, 2:] = b[:, 2:].max(1)[0].unsqueeze(1)  # rectangle to square
+            b[:, 2:] = b[:, 2:] * 1.3 + 30  # pad
+            d[:, :4] = xywh2xyxy(b).long()
+        
+            # Rescale boxes from img_size to im0 size
+            scale_boxes(img.shape[2:], d[:, :4], im0[i].shape)
+
+            # Classes
+            pred_cls1 = d[:, 5].long()
+            ims = []
+            for j, a in enumerate(d):  # per item
+                cutout = im0[i][int(a[1]):int(a[3]), int(a[0]):int(a[2])]
+                im = cv2.resize(cutout, (second_size, second_size))  # BGR
+                if check_prediction:
+                    cv2.imwrite('example%i.jpg' % j, im)
+                im = im[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
+                im = np.ascontiguousarray(im, dtype=np.float32)  # uint8 to float32
+                im /= 255  # 0 - 255 to 0.0 - 1.0
+                ims.append(im)
+
+            PRED_cls2 = model(torch.Tensor(ims).to(d.device))
+            PRED_cls2 = torch.nn.Softmax(dim=1)(PRED_cls2)
+            # pred_cls2 = PRED_cls2.argmax(1)  # classifier prediction
+            pred_conf2, pred_cls2 = PRED_cls2.max(1)
+        
+            if check_prediction:
+                for j, c in enumerate(pred_cls2):
+                    prev_name = f"example{j}.jpg"
+                    new_name = f"example{j}_{int(round(float(c)))}.jpg"
+                    os.rename(prev_name, new_name)
+        
+            # 2nd model determines the class
+            x[i][:, -1] = pred_cls2
+            x[i][:, -2] = pred_conf2
+
+            # filter by classes
+            if classes is not None:
+                x[i] = x[i][(x[i][:, 5:6] == torch.tensor(classes, device=device_)).any(1)]
+
+    return x
 
 def increment_path(path, exist_ok=False, sep='', mkdir=False):
     # Increment file or directory path, i.e. runs/exp --> runs/exp{sep}2, runs/exp{sep}3, ... etc.

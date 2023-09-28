@@ -35,6 +35,7 @@ import sys
 from pathlib import Path
 
 import torch
+import torchvision
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv5 root directory
@@ -45,9 +46,18 @@ ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 from models.common import DetectMultiBackend
 from utils.dataloaders import IMG_FORMATS, VID_FORMATS, LoadImages, LoadScreenshots, LoadStreams
 from utils.general import (LOGGER, Profile, check_file, check_img_size, check_imshow, check_requirements, colorstr, cv2,
-                           increment_path, non_max_suppression, print_args, scale_boxes, strip_optimizer, xyxy2xywh)
+                           increment_path, non_max_suppression, print_args, scale_boxes, strip_optimizer, xyxy2xywh, 
+                           apply_classifier, apply_custom_classifier)
 from utils.plots import Annotator, colors, save_one_box
 from utils.torch_utils import select_device, smart_inference_mode
+
+classifier_model = 'classify-eye.pt'
+
+import sys # to access the system
+import cv2
+from models.experimental import attempt_load
+
+
 
 
 @smart_inference_mode()
@@ -56,7 +66,7 @@ def run(
         source=ROOT / 'data/images',  # file/dir/URL/glob/screen/0(webcam)
         data=ROOT / 'data/coco128.yaml',  # dataset.yaml path
         imgsz=(640, 640),  # inference size (height, width)
-        conf_thres=0.25,  # confidence threshold
+        conf_thres=0.45,  # confidence threshold
         iou_thres=0.45,  # NMS IOU threshold
         max_det=1000,  # maximum detections per image
         device='',  # cuda device, i.e. 0 or 0,1,2,3 or cpu
@@ -99,6 +109,27 @@ def run(
     stride, names, pt = model.stride, model.names, model.pt
     imgsz = check_img_size(imgsz, s=stride)  # check image size
 
+    # Edit custom
+    # load second model
+    second_model_path = "custom-model/classify-eye.pt" # define the path
+    second_model = torch.load(second_model_path, map_location=torch.device('cpu'))['model'].float()
+    # second_model = torchvision.models.__dict__['efficientnet_b0'](pretrained=True).to(device).eval()
+
+    # second_model.to("cuda:0")
+    # names = ['fresh', 'non-fresh'] # list of class names for 2nd model
+
+    # print('print')
+    # print(torch.device('cpu'))
+    # Load custom YOLOv5 model
+    # weights_path = 'custom-model/classify-eye.pt'
+    # device = select_device('0')  # Pilih perangkat (GPU) yang ingin Anda gunakan
+    # second_model = attempt_load(weights_path, map_location=device('cpu'))
+
+    # Set model ke inference mode
+    second_model.eval()
+
+    # End edit custom
+
     # Dataloader
     bs = 1  # batch_size
     if webcam:
@@ -133,6 +164,33 @@ def run(
 
         # Second-stage classifier (optional)
         # pred = utils.general.apply_classifier(pred, classifier_model, im, im0s)
+
+        # models = torchvision.models.__dict__['efficientnet_b0'](pretrained=True).to(device).eval()
+        # models = classifier_model
+        # models.load_state_dict(torch.load('classify-eye.pt', map_location=device)['model']).to(device).eval()
+        # models = 
+
+        #print(pred)
+
+        # pred = apply_classifier(pred, second_model, im, im0s)
+        # pred = apply_custom_classifier(pred, second_model, im, im0s, 224, classes)
+
+        # print(pred)
+
+        # img = cv2.imread(im, cv2.IMREAD_ANYCOLOR)
+        # #print(img)
+        # cv2.imshow('objek',img)
+        # cv2.waitKey(0)
+  
+        # # # closing all open windows
+        # cv2.destroyAllWindows()
+ 
+        # while True:
+        #     cv2.imshow("Sheep", img)
+        #     cv2.waitKey(0)
+        #     sys.exit() # to exit from all the processes
+        
+        # cv2.destroyAllWindows()
 
         # Process predictions
         for i, det in enumerate(pred):  # per image
@@ -259,3 +317,6 @@ def main(opt):
 if __name__ == '__main__':
     opt = parse_opt()
     main(opt)
+
+
+# run(source='images/makarel-good.jpg',weights='custom-model/eye-detect-dual.pt')

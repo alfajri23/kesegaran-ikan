@@ -1,0 +1,13 @@
+train: dataset/objek-deteksi-segar-tidak-segar/train/images
+val: dataset/objek-deteksi-segar-tidak-segar/valid/images
+test: dataset/objek-deteksi-segar-tidak-segar/test/images
+
+nc: 2
+names: ['segar', 'tidak-segar']
+
+roboflow:
+  workspace: kesegaran-ikan-fo9x5
+  project: kesegaran-mata-ikan-tsp53
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/kesegaran-ikan-fo9x5/kesegaran-mata-ikan-tsp53/dataset/1
