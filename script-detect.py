@@ -24,7 +24,7 @@ import glob
 from datetime import datetime
 import os
 import wget
-from video_predict import runVideo
+#from video_predict import runVideo
 
 
 # Configurations
@@ -104,44 +104,44 @@ def imageInput(model, src):
                 st.image(img_, caption='Model Prediction(s)')
 
 
-def videoInput(model, src):
-    if src == 'Upload your own data.':
-        uploaded_video = st.file_uploader(
-            "Upload A Video", type=['mp4', 'mpeg', 'mov'])
-        pred_view = st.empty()
-        warning = st.empty()
-        if uploaded_video != None:
+# def videoInput(model, src):
+#     if src == 'Upload your own data.':
+#         uploaded_video = st.file_uploader(
+#             "Upload A Video", type=['mp4', 'mpeg', 'mov'])
+#         pred_view = st.empty()
+#         warning = st.empty()
+#         if uploaded_video != None:
 
-            # Save video to disk
-            ts = datetime.timestamp(datetime.now())  # timestamp a upload
-            uploaded_video_path = os.path.join(
-                'data/uploads', str(ts)+uploaded_video.name)
-            with open(uploaded_video_path, mode='wb') as f:
-                f.write(uploaded_video.read())
+#             # Save video to disk
+#             ts = datetime.timestamp(datetime.now())  # timestamp a upload
+#             uploaded_video_path = os.path.join(
+#                 'data/uploads', str(ts)+uploaded_video.name)
+#             with open(uploaded_video_path, mode='wb') as f:
+#                 f.write(uploaded_video.read())
 
-            # Display uploaded video
-            with open(uploaded_video_path, 'rb') as f:
-                video_bytes = f.read()
-            st.video(video_bytes)
-            st.write("Uploaded Video")
-            submit = st.button("Run Prediction")
-            if submit:
-                runVideo(model, uploaded_video_path, pred_view, warning)
+#             # Display uploaded video
+#             with open(uploaded_video_path, 'rb') as f:
+#                 video_bytes = f.read()
+#             st.video(video_bytes)
+#             st.write("Uploaded Video")
+#             submit = st.button("Run Prediction")
+#             if submit:
+#                 runVideo(model, uploaded_video_path, pred_view, warning)
 
-    elif src == 'From example data.':
-        # Image selector slider
-        videopaths = glob.glob('data/example_videos/*')
-        if len(videopaths) == 0:
-            st.error(
-                'No videos found, Please upload example videos in data/example_videos', icon="⚠️")
-            return
-        imgsel = st.slider('Select random video from example data.',
-                           min_value=1, max_value=len(videopaths), step=1)
-        pred_view = st.empty()
-        video = videopaths[imgsel-1]
-        submit = st.button("Predict!")
-        if submit:
-            runVideo(model, video, pred_view, warning)
+#     elif src == 'From example data.':
+#         # Image selector slider
+#         videopaths = glob.glob('data/example_videos/*')
+#         if len(videopaths) == 0:
+#             st.error(
+#                 'No videos found, Please upload example videos in data/example_videos', icon="⚠️")
+#             return
+#         imgsel = st.slider('Select random video from example data.',
+#                            min_value=1, max_value=len(videopaths), step=1)
+#         pred_view = st.empty()
+#         video = videopaths[imgsel-1]
+#         submit = st.button("Predict!")
+#         if submit:
+#             runVideo(model, video, pred_view, warning)
 
 
 def main():
