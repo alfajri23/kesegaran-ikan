@@ -191,8 +191,8 @@ def downloadModel():
 def loadmodel(device):
     if CFG_ENABLE_URL_DOWNLOAD:
         CFG_MODEL_PATH = f"models/{url.split('/')[-1:][0]}"
-    model = torch.hub.load('.', 'custom',
-                           path="obj-kesegaran-30.pt", force_reload=True, device=device)
+    model = torch.hub.load('ultralytics/yolov5', 'custom',
+                           path='custom-model/eye-detect-dual.pt', force_reload=True, device=device)
     return model
 
 
