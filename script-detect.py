@@ -29,7 +29,7 @@ import wget
 
 # Configurations
 CFG_MODEL_PATH = "obj-kesegaran-30.pt"
-CFG_ENABLE_URL_DOWNLOAD = False
+CFG_ENABLE_URL_DOWNLOAD = True
 CFG_ENABLE_VIDEO_PREDICTION = True
 if CFG_ENABLE_URL_DOWNLOAD:
     # Configure this if you set cfg_enable_url_download to True
@@ -191,8 +191,8 @@ def downloadModel():
 def loadmodel(device):
     if CFG_ENABLE_URL_DOWNLOAD:
         CFG_MODEL_PATH = f"models/{url.split('/')[-1:][0]}"
-    model = torch.hub.load('ultralytics/yolov5', 'custom',
-                           path=CFG_MODEL_PATH, force_reload=True, device=device)
+    model = torch.hub.load('.', 'custom',
+                           path="obj-kesegaran-30.pt", force_reload=True, device=device)
     return model
 
 
