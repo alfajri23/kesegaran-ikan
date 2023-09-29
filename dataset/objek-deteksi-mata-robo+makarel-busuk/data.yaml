@@ -1,0 +1,13 @@
+train: dataset/train/images
+val: dataset/valid/images
+test: dataset/test/images
+
+nc: 1
+names: ['eye']
+
+roboflow:
+  workspace: kartik-rvdpb
+  project: eye-detection-ua90g
+  version: 5
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/kartik-rvdpb/eye-detection-ua90g/dataset/5
