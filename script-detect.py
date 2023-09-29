@@ -28,7 +28,7 @@ import wget
 
 
 # Configurations
-CFG_MODEL_PATH = "custom-model/obj-kesegaran-30.pt"
+CFG_MODEL_PATH = "obj-kesegaran-30.pt"
 CFG_ENABLE_URL_DOWNLOAD = False
 CFG_ENABLE_VIDEO_PREDICTION = True
 if CFG_ENABLE_URL_DOWNLOAD:
