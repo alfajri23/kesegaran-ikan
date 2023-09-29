@@ -192,7 +192,7 @@ def loadmodel(device):
     if CFG_ENABLE_URL_DOWNLOAD:
         CFG_MODEL_PATH = f"models/{url.split('/')[-1:][0]}"
     model = torch.hub.load('.', 'custom',
-                           path='custom-model/eye-detect-dual.pt', source='local', force_reload=True, device=device)
+                           path='obj-kesegaran-30.pt', source='local', force_reload=True, device=device)
     return model
 
 
