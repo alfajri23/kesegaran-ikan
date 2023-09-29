@@ -23,6 +23,7 @@
 !setup.cfg
 !cfg/yolov3*.cfg
 
+!custom-model/*
 storage.googleapis.com
 runs/*
 data/*
